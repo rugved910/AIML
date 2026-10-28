@@ -1,0 +1,10 @@
+def smartHome(temperature):
+    if temperature < 20:
+        return "Heater ON"
+    elif temperature > 26:
+        return "AC ON"
+    else:
+        return "System OFF"
+
+temperature = int(input("Enter temperature: "))
+print(smartHome(temperature))
