@@ -1,0 +1,57 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+data = fetch_openml("titanic", version=1, as_frame=True)
+df = data.frame
+
+print(df.head())
+print(df.isnull().sum())
+print(df.describe(include="all"))
+
+df["survived"] = pd.to_numeric(df["survived"], errors="coerce")
+df = df.dropna(subset=["survived"])
+
+X = df.drop(columns=["survived", "boat", "body", "home.dest"],
+            errors="ignore")
+y = df["survived"].astype(int)
+
+numCols = X.select_dtypes(include="number").columns
+catCols = X.select_dtypes(exclude="number").columns
+
+numPipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler())
+])
+
+catPipe = Pipeline([
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("encoder", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocessor = ColumnTransformer([
+    ("num", numPipe, numCols),
+    ("cat", catPipe, catCols)
+])
+
+XTrain, XTest, yTrain, yTest = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+XTrain = preprocessor.fit_transform(XTrain)
+XTest = preprocessor.transform(XTest)
+
+print("Training shape:", XTrain.shape)
+print("Testing shape:", XTest.shape)
+
+df["age"].hist()
+plt.title("Age Distribution")
+plt.show()
+
+df.boxplot(column="age", by="survived")
+plt.show()
