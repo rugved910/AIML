@@ -1,0 +1,69 @@
+import heapq
+
+graph = {
+    'A': [('B', 1), ('C', 4)],
+    'B': [('D', 5), ('E', 2)],
+    'C': [('F', 3)],
+    'D': [('G', 3)],
+    'E': [('G', 5)],
+    'F': [('G', 2)],
+    'G': []
+}
+
+h = {
+    'A': 7, 'B': 6, 'C': 4,
+    'D': 3, 'E': 4, 'F': 2, 'G': 0
+}
+
+def greedy(start, goal):
+    pq = [(h[start], start, [start])]
+    visited = set()
+
+    while pq:
+        _, node, path = heapq.heappop(pq)
+
+        if node == goal:
+            return path
+
+        if node in visited:
+            continue
+        visited.add(node)
+
+        for neighbor, cost in graph[node]:
+            if neighbor not in visited:
+                heapq.heappush(
+                    pq, (h[neighbor], neighbor, path + [neighbor])
+                )
+
+    return None
+
+
+def aStar(start, goal):
+    pq = [(h[start], 0, start, [start])]
+    best = {start: 0}
+
+    while pq:
+        f, g, node, path = heapq.heappop(pq)
+
+        if node == goal:
+            return path, g
+
+        if g != best.get(node):
+            continue
+
+        for neighbor, cost in graph[node]:
+            newG = g + cost
+
+            if newG < best.get(neighbor, float('inf')):
+                best[neighbor] = newG
+                heapq.heappush(
+                    pq,
+                    (newG + h[neighbor], newG,
+                     neighbor, path + [neighbor])
+                )
+
+    return None
+
+
+print("Greedy:", greedy('A', 'G'))
+print("A*:", aStar('A', 'G'))
