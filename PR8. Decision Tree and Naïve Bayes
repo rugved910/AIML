@@ -1,0 +1,27 @@
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report
+
+data = load_breast_cancer()
+X, y = data.data, data.target
+
+XTrain, XTest, yTrain, yTest = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+models = {
+    "Decision Tree": DecisionTreeClassifier(
+        max_depth=5, random_state=42
+    ),
+    "Naive Bayes": GaussianNB()
+}
+
+for name, model in models.items():
+    model.fit(XTrain, yTrain)
+    pred = model.predict(XTest)
+
+    print("\n", name)
+    print("Accuracy:", accuracy_score(yTest, pred))
+    print(classification_report(yTest, pred))
