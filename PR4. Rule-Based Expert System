@@ -1,0 +1,38 @@
+rules = [
+    ({"rain"}, "wet_road"),
+    ({"wet_road"}, "risky_driving"),
+    ({"fog", "night"}, "low_visibility")
+]
+
+def forwardChaining(facts):
+    facts = set(facts)
+    changed = True
+
+    while changed:
+        changed = False
+
+        for conditions, conclusion in rules:
+            if conditions <= facts and conclusion not in facts:
+                facts.add(conclusion)
+                changed = True
+
+    return facts
+
+
+def backwardChaining(goal, facts):
+    if goal in facts:
+        return True
+
+    for conditions, conclusion in rules:
+        if conclusion == goal:
+            if all(backwardChaining(c, facts)
+                   for c in conditions):
+                return True
+
+    return False
+
+
+facts = {"rain"}
+
+print("Forward:", forwardChaining(facts))
+print("Backward:", backwardChaining("risky_driving", facts))
