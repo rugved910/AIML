@@ -1,0 +1,53 @@
+from collections import deque
+
+graph = {
+    'A': ['B', 'C'],
+    'B': ['D', 'E'],
+    'C': ['F'],
+    'D': [],
+    'E': ['F'],
+    'F': []
+}
+
+def bfs(start, goal):
+    queue = deque([(start, [start])])
+    visited = {start}
+    explored = 0
+
+    while queue:
+        node, path = queue.popleft()
+        explored += 1
+
+        if node == goal:
+            return path, explored
+
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append((neighbor, path + [neighbor]))
+
+    return None, explored
+
+
+def dfs(start, goal):
+    stack = [(start, [start])]
+    visited = {start}
+    explored = 0
+
+    while stack:
+        node, path = stack.pop()
+        explored += 1
+
+        if node == goal:
+            return path, explored
+
+        for neighbor in reversed(graph[node]):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                stack.append((neighbor, path + [neighbor]))
+
+    return None, explored
+
+
+print("BFS:", bfs('A', 'F'))
+print("DFS:", dfs('A', 'F'))
