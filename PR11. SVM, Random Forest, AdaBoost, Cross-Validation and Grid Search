@@ -1,0 +1,49 @@
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import (
+    train_test_split, cross_val_score, GridSearchCV
+)
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.metrics import accuracy_score
+
+data = load_breast_cancer()
+X, y = data.data, data.target
+
+XTrain, XTest, yTrain, yTest = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+models = {
+    "SVM": make_pipeline(StandardScaler(), SVC()),
+    "Random Forest": RandomForestClassifier(random_state=42),
+    "AdaBoost": AdaBoostClassifier(random_state=42)
+}
+
+for name, model in models.items():
+    scores = cross_val_score(model, XTrain, yTrain, cv=5)
+    model.fit(XTrain, yTrain)
+    pred = model.predict(XTest)
+
+    print("\n", name)
+    print("CV Accuracy:", scores.mean())
+    print("Test Accuracy:", accuracy_score(yTest, pred))
+
+# Hyperparameter tuning for Random Forest
+grid = {
+    "n_estimators": [50, 100],
+    "max_depth": [None, 5, 10]
+}
+
+search = GridSearchCV(
+    RandomForestClassifier(random_state=42),
+    grid, cv=5, scoring="accuracy", n_jobs=-1
+)
+
+search.fit(XTrain, yTrain)
+
+print("Best parameters:", search.best_params_)
+print("Best CV accuracy:", search.best_score_)
+print("Tuned test accuracy:",
+      accuracy_score(yTest, search.best_estimator_.predict(XTest)))
